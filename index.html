@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoTiers API Docs</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #090b0f; --bg2: #0e1118; --bg3: #131720; --bg4: #1a2030;
+    --border: #1e2535; --border2: #252d40;
+    --accent: #00e5ff; --comp: #ff6b35;
+    --green: #00ff88; --red: #ff4466; --yellow: #ffd700;
+    --text: #e8eaf0; --text2: #8892a4; --text3: #4a5568;
+    --get: #00c896; --post: #ff6b35; --delete: #ff4466;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Outfit', sans-serif; font-size: 14px;
+    line-height: 1.6; display: flex; min-height: 100vh;
+  }
+
+  /* Sidebar */
+  nav {
+    width: 240px; min-height: 100vh; background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 0; position: fixed; top: 0; left: 0; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 0;
+  }
+
+  .logo {
+    padding: 0 20px 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .logo-text {
+    font-family: 'Rajdhani', sans-serif; font-size: 20px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .logo-text span { color: var(--accent); text-shadow: 0 0 16px var(--accent); }
+  .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+  .nav-section { padding: 8px 20px 4px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.12em; }
+
+  nav a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 20px; font-size: 13px; color: var(--text2);
+    text-decoration: none; transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  nav a:hover { color: var(--text); background: rgba(255,255,255,0.03); border-left-color: var(--border2); }
+  nav a .method { font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500; padding: 2px 5px; border-radius: 3px; }
+  .m-get { background: rgba(0,200,150,0.15); color: var(--get); }
+  .m-post { background: rgba(255,107,53,0.15); color: var(--post); }
+  .m-delete { background: rgba(255,68,102,0.15); color: var(--delete); }
+
+  /* Main */
+  main { margin-left: 240px; flex: 1; max-width: 900px; padding: 48px 48px 80px; }
+
+  /* Hero */
+  .hero { margin-bottom: 48px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  .hero h1 { font-family: 'Rajdhani', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 8px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--text2); font-size: 15px; max-width: 560px; }
+  .version { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); border-radius: 20px; padding: 3px 10px; margin-bottom: 16px; }
+
+  /* Base URL box */
+  .base-url {
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 12;
+    margin-top: 20px;
+  }
+  .base-url-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .base-url-val { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--accent); }
+
+  /* Section headers */
+  .section { margin-bottom: 56px; }
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .section-header h2 { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .section-divider { flex: 1; height: 1px; background: var(--border); }
+
+  /* Endpoint */
+  .endpoint { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+
+  .endpoint-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; cursor: pointer;
+    border-bottom: 1px solid transparent; transition: all 0.15s;
+  }
+
+  .endpoint-header:hover { background: var(--bg3); }
+  .endpoint.open .endpoint-header { border-bottom-color: var(--border); background: var(--bg3); }
+
+  .method-badge {
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+    padding: 3px 9px; border-radius: 4px; min-width: 52px; text-align: center;
+  }
+
+  .endpoint-path { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+  .endpoint-path .param { color: var(--accent); }
+  .endpoint-desc { color: var(--text3); font-size: 12px; margin-left: auto; }
+  .auth-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; background: rgba(255,107,53,0.12); color: var(--comp); border: 1px solid rgba(255,107,53,0.2); font-family: 'DM Mono', monospace; }
+
+  .endpoint-body { padding: 20px 20px 24px; display: none; }
+  .endpoint.open .endpoint-body { display: block; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .param-name { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent); }
+  .param-type { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  .param-req { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+  .req { background: rgba(255,68,102,0.12); color: var(--red); }
+  .opt { background: rgba(136,146,164,0.1); color: var(--text3); }
+
+  /* Code blocks */
+  pre {
+    background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px;
+    padding: 16px; overflow-x: auto; font-family: 'DM Mono', monospace;
+    font-size: 12px; line-height: 1.7; margin: 12px 0;
+  }
+
+  .code-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin: 16px 0 6px; font-family: 'DM Mono', monospace; }
+
+  .s { color: #a8ff78; } /* string */
+  .n { color: var(--accent); } /* number */
+  .k { color: #ff9e64; } /* key */
+  .c { color: var(--text3); } /* comment */
+  .b { color: var(--comp); } /* boolean/null */
+
+  /* Info boxes */
+  .info-box { padding: 12px 16px; border-radius: 7px; margin: 12px 0; font-size: 13px; border-left: 3px solid; }
+  .info-note { background: rgba(0,229,255,0.06); border-color: var(--accent); color: var(--text2); }
+  .info-warn { background: rgba(255,215,0,0.06); border-color: var(--yellow); color: var(--text2); }
+  .info-danger { background: rgba(255,68,102,0.06); border-color: var(--red); color: var(--text2); }
+
+  .subheading { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin: 16px 0 8px; }
+
+  /* ELO section */
+  .elo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+  .elo-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .elo-card h4 { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .elo-card p { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .elo-card code { font-family: 'DM Mono', monospace; color: var(--accent); font-size: 11px; }
+
+  /* Categories */
+  .cat-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .cat-pill { font-family: 'DM Mono', monospace; font-size: 11px; padding: 4px 10px; border-radius: 20px; background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav>
+  <div class="logo">
+    <div class="logo-text">NEO<span>TIERS</span></div>
+    <div class="logo-sub">API Reference v1.0</div>
+  </div>
+
+  <div class="nav-section">Public</div>
+  <a href="#leaderboard"><span class="method m-get">GET</span>/api/leaderboard</a>
+  <a href="#players"><span class="method m-get">GET</span>/api/players</a>
+  <a href="#player-uuid"><span class="method m-get">GET</span>/api/players/:uuid</a>
+  <a href="#matches"><span class="method m-get">GET</span>/api/matches</a>
+  <a href="#search"><span class="method m-get">GET</span>/api/search</a>
+
+  <div class="nav-section" style="margin-top:12px">Webhook</div>
+  <a href="#match-post"><span class="method m-post">POST</span>/api/match</a>
+
+  <div class="nav-section" style="margin-top:12px">Staff</div>
+  <a href="#staff-comp-get"><span class="method m-get">GET</span>/api/staff/comp</a>
+  <a href="#staff-comp-post"><span class="method m-post">POST</span>/api/staff/comp</a>
+  <a href="#staff-players-post"><span class="method m-post">POST</span>/api/staff/players</a>
+  <a href="#staff-players-delete"><span class="method m-delete">DEL</span>/api/staff/players</a>
+
+  <div class="nav-section" style="margin-top:12px">Reference</div>
+  <a href="#categories">Categories</a>
+  <a href="#elo">ELO System</a>
+  <a href="#errors">Error Codes</a>
+</nav>
+
+<!-- Main -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="version">● v1.0</div>
+    <h1>NeoTiers <span>API</span></h1>
+    <p>REST API for the NeoTiers Minecraft PvP ranking system. All endpoints return JSON. Public routes require no authentication.</p>
+    <div class="base-url">
+      <div>
+        <div class="base-url-label">Base URL</div>
+        <div class="base-url-val">https://your-backend.vercel.app</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Public Routes -->
+  <div class="section" id="leaderboard">
+    <div class="section-header">
+      <h2>Public Routes</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <!-- GET /api/leaderboard -->
+    <div class="endpoint open">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-get">GET</span>
+        <span class="endpoint-path">/api/leaderboard</span>
+        <span class="endpoint-desc">Ranked player list</span>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--text2); margin-bottom:16px">Returns all players sorted by ELO score. Supports filtering by mode and category, with pagination.</p>
+
+        <div class="subheading">Query Parameters</div>
+        <table>
+          <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">mode</td>
+            <td class="param-type">string</td>
+            <td><code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">comp</code></td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Rating mode — <code style="font-family:'DM Mono',monospace;color:var(--accent)">comp</code> or <code style="font-family:'DM Mono',monospace;color:var(--accent)">casual</code></td>
+          </tr>
+          <tr>
+            <td class="param-name">category</td>
+            <td class="param-type">string</td>
+            <td><code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">all</code></td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Filter by category or <code style="font-family:'DM Mono',monospace;color:var(--accent)">all</code> for total ELO</td>
+          </tr>
+          <tr>
+            <td class="param-name">page</td>
+            <td class="param-type">number</td>
+            <td><code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">1</code></td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Page number</td>
+          </tr>
+          <tr>
+            <td class="param-name">limit</td>
+            <td class="param-type">number</td>
+            <td><code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">50</code></td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Results per page (max 100)</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Example Request</div>
+        <pre>GET /api/leaderboard?mode=comp&category=sword&page=1</pre>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"leaderboard"</span>: [
+    {
+      <span class="k">"rank"</span>: <span class="n">1</span>,
+      <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>,
+      <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-e396-476b-a115-8438d83c67d4"</span>,
+      <span class="k">"avatar_url"</span>: <span class="s">"https://mc-heads.net/avatar/Technoblade/48"</span>,
+      <span class="k">"ratings"</span>: {
+        <span class="k">"sword"</span>: <span class="n">1980</span>, <span class="k">"axe"</span>: <span class="n">1750</span>, <span class="k">"smp"</span>: <span class="n">1900</span>,
+        <span class="k">"nethpot"</span>: <span class="n">1820</span>, <span class="k">"pot"</span>: <span class="n">1870</span>, <span class="k">"crystal"</span>: <span class="n">1650</span>,
+        <span class="k">"mace"</span>: <span class="n">1700</span>, <span class="k">"custom_kit"</span>: <span class="n">1800</span>, <span class="k">"uhc"</span>: <span class="n">1930</span>
+      },
+      <span class="k">"score"</span>: <span class="n">16400</span>
+    }
+  ],
+  <span class="k">"meta"</span>: {
+    <span class="k">"mode"</span>: <span class="s">"comp"</span>, <span class="k">"category"</span>: <span class="s">"sword"</span>,
+    <span class="k">"page"</span>: <span class="n">1</span>, <span class="k">"limit"</span>: <span class="n">50</span>,
+    <span class="k">"total_players"</span>: <span class="n">42</span>, <span class="k">"total_pages"</span>: <span class="n">1</span>
+  }
+}</pre>
+      </div>
+    </div>
+
+    <!-- GET /api/players -->
+    <div class="endpoint" id="players">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-get">GET</span>
+        <span class="endpoint-path">/api/players</span>
+        <span class="endpoint-desc">All players with ratings</span>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--text2); margin-bottom:16px">Returns all registered players with their comp and casual ratings, sorted alphabetically by IGN.</p>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"players"</span>: [
+    {
+      <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>,
+      <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-e396-476b-a115-8438d83c67d4"</span>,
+      <span class="k">"created_at"</span>: <span class="s">"2026-03-10T06:13:06.694Z"</span>,
+      <span class="k">"avatar_url"</span>: <span class="s">"https://mc-heads.net/avatar/Technoblade/48"</span>,
+      <span class="k">"comp_ratings"</span>: { <span class="k">"sword"</span>: <span class="n">1980</span>, <span class="c">/* ... */</span> },
+      <span class="k">"casual_ratings"</span>: { <span class="k">"sword"</span>: <span class="n">1016</span>, <span class="c">/* ... */</span> },
+      <span class="k">"comp_total"</span>: <span class="n">16400</span>,
+      <span class="k">"casual_total"</span>: <span class="n">9032</span>
+    }
+  ]
+}</pre>
+      </div>
+    </div>
+
+    <!-- GET /api/players/:uuid -->
+    <div class="endpoint" id="player-uuid">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-get">GET</span>
+        <span class="endpoint-path">/api/players/<span class="param">:uuid</span></span>
+        <span class="endpoint-desc">Single player profile</span>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--text2); margin-bottom:16px">Returns full profile for a single player including both rating modes, win/loss stats, and the last 30 matches.</p>
+
+        <div class="subheading">Path Parameters</div>
+        <table>
+          <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">uuid</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Player's Minecraft UUID (dashed format)</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Example Request</div>
+        <pre>GET /api/players/b876ec32-e396-476b-a115-8438d83c67d4</pre>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"player"</span>: {
+    <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>,
+    <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-e396-476b-a115-8438d83c67d4"</span>,
+    <span class="k">"avatar_url"</span>: <span class="s">"https://mc-heads.net/avatar/Technoblade/128"</span>,
+    <span class="k">"comp_ratings"</span>: { <span class="k">"sword"</span>: <span class="n">1980</span>, <span class="c">/* all 9 categories */</span> },
+    <span class="k">"casual_ratings"</span>: { <span class="k">"sword"</span>: <span class="n">1016</span>, <span class="c">/* all 9 categories */</span> },
+    <span class="k">"comp_total"</span>: <span class="n">16400</span>,
+    <span class="k">"casual_total"</span>: <span class="n">9032</span>,
+    <span class="k">"stats"</span>: {
+      <span class="k">"matches_played"</span>: <span class="n">12</span>, <span class="k">"wins"</span>: <span class="n">8</span>,
+      <span class="k">"losses"</span>: <span class="n">4</span>, <span class="k">"win_rate"</span>: <span class="n">67</span>
+    },
+    <span class="k">"match_history"</span>: [
+      {
+        <span class="k">"match_id"</span>: <span class="s">"cb17a983-..."</span>,
+        <span class="k">"category"</span>: <span class="s">"sword"</span>, <span class="k">"match_type"</span>: <span class="s">"1v1"</span>,
+        <span class="k">"played_at"</span>: <span class="s">"2026-03-10T06:42:32Z"</span>,
+        <span class="k">"won"</span>: <span class="b">true</span>, <span class="k">"placement"</span>: <span class="n">1</span>,
+        <span class="k">"elo_before"</span>: <span class="n">1000</span>, <span class="k">"elo_after"</span>: <span class="n">1016</span>, <span class="k">"elo_delta"</span>: <span class="n">16</span>
+      }
+    ]
+  }
+}</pre>
+
+        <div class="info-box info-note">Returns <code style="font-family:'DM Mono',monospace">404</code> if no player exists with that UUID.</div>
+      </div>
+    </div>
+
+    <!-- GET /api/matches -->
+    <div class="endpoint" id="matches">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-get">GET</span>
+        <span class="endpoint-path">/api/matches</span>
+        <span class="endpoint-desc">Match feed</span>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--text2); margin-bottom:16px">Returns paginated match history with player details and ELO deltas, sorted by most recent first.</p>
+
+        <div class="subheading">Query Parameters</div>
+        <table>
+          <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">category</td>
+            <td class="param-type">string</td>
+            <td>—</td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Filter by category (e.g. <code style="font-family:'DM Mono',monospace;color:var(--accent)">sword</code>)</td>
+          </tr>
+          <tr>
+            <td class="param-name">match_type</td>
+            <td class="param-type">string</td>
+            <td>—</td>
+            <td><span class="param-req opt">optional</span></td>
+            <td><code style="font-family:'DM Mono',monospace;color:var(--accent)">1v1</code>, <code style="font-family:'DM Mono',monospace;color:var(--accent)">ffa</code>, or <code style="font-family:'DM Mono',monospace;color:var(--accent)">team</code></td>
+          </tr>
+          <tr>
+            <td class="param-name">page</td>
+            <td class="param-type">number</td>
+            <td><code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">1</code></td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Page number</td>
+          </tr>
+          <tr>
+            <td class="param-name">limit</td>
+            <td class="param-type">number</td>
+            <td><code style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)">20</code></td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Results per page (max 100)</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"matches"</span>: [
+    {
+      <span class="k">"id"</span>: <span class="s">"cb17a983-5ae1-4e6d-83c7-8316d48f2c17"</span>,
+      <span class="k">"category"</span>: <span class="s">"sword"</span>, <span class="k">"match_type"</span>: <span class="s">"1v1"</span>,
+      <span class="k">"played_at"</span>: <span class="s">"2026-03-10T06:42:32Z"</span>,
+      <span class="k">"server_id"</span>: <span class="s">"my-server"</span>,
+      <span class="k">"players"</span>: [
+        {
+          <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>,
+          <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-..."</span>,
+          <span class="k">"avatar_url"</span>: <span class="s">"https://mc-heads.net/avatar/Technoblade/32"</span>,
+          <span class="k">"won"</span>: <span class="b">true</span>, <span class="k">"placement"</span>: <span class="n">1</span>,
+          <span class="k">"elo_before"</span>: <span class="n">1000</span>, <span class="k">"elo_after"</span>: <span class="n">1016</span>, <span class="k">"elo_delta"</span>: <span class="n">16</span>
+        }
+      ]
+    }
+  ],
+  <span class="k">"meta"</span>: { <span class="k">"page"</span>: <span class="n">1</span>, <span class="k">"limit"</span>: <span class="n">20</span>, <span class="k">"total"</span>: <span class="n">1</span>, <span class="k">"total_pages"</span>: <span class="n">1</span> }
+}</pre>
+      </div>
+    </div>
+
+    <!-- GET /api/search -->
+    <div class="endpoint" id="search">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-get">GET</span>
+        <span class="endpoint-path">/api/search</span>
+        <span class="endpoint-desc">Search players by IGN</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="subheading">Query Parameters</div>
+        <table>
+          <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">q</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Search query — partial IGN match, case-insensitive</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Example Request</div>
+        <pre>GET /api/search?q=techno</pre>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"results"</span>: [
+    {
+      <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>,
+      <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-..."</span>,
+      <span class="k">"comp_total"</span>: <span class="n">16400</span>,
+      <span class="k">"casual_total"</span>: <span class="n">9032</span>
+    }
+  ],
+  <span class="k">"query"</span>: <span class="s">"techno"</span>,
+  <span class="k">"count"</span>: <span class="n">1</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Webhook -->
+  <div class="section" id="match-post">
+    <div class="section-header">
+      <h2>Webhook</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="endpoint open">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-post">POST</span>
+        <span class="endpoint-path">/api/match</span>
+        <span class="auth-badge">⚡ webhook secret</span>
+        <span class="endpoint-desc">Submit match result</span>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--text2); margin-bottom:16px">Called by your Minecraft server plugin after a match ends. Calculates and applies ELO changes to the casual ratings of all involved players.</p>
+
+        <div class="info-box info-warn">Requires the header <code style="font-family:'DM Mono',monospace">x-neotiers-secret</code> matching <code style="font-family:'DM Mono',monospace">MATCH_WEBHOOK_SECRET</code> in your backend <code style="font-family:'DM Mono',monospace">.env</code>.</div>
+
+        <div class="subheading">Headers</div>
+        <table>
+          <tr><th>Header</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">x-neotiers-secret</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Webhook secret from your <code style="font-family:'DM Mono',monospace">.env.local</code></td>
+          </tr>
+          <tr>
+            <td class="param-name">Content-Type</td>
+            <td><span class="param-req req">required</span></td>
+            <td><code style="font-family:'DM Mono',monospace">application/json</code></td>
+          </tr>
+        </table>
+
+        <div class="subheading">Body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">category</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>One of the 9 valid categories</td>
+          </tr>
+          <tr>
+            <td class="param-name">match_type</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td><code style="font-family:'DM Mono',monospace;color:var(--accent)">1v1</code>, <code style="font-family:'DM Mono',monospace;color:var(--accent)">ffa</code>, or <code style="font-family:'DM Mono',monospace;color:var(--accent)">team</code></td>
+          </tr>
+          <tr>
+            <td class="param-name">players</td>
+            <td class="param-type">array</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Array of player result objects</td>
+          </tr>
+          <tr>
+            <td class="param-name">players[].uuid</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Player's Minecraft UUID</td>
+          </tr>
+          <tr>
+            <td class="param-name">players[].won</td>
+            <td class="param-type">boolean</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Whether this player won</td>
+          </tr>
+          <tr>
+            <td class="param-name">players[].placement</td>
+            <td class="param-type">number</td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Final placement (1 = first). Used for FFA ELO.</td>
+          </tr>
+          <tr>
+            <td class="param-name">players[].team</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Team identifier for team matches</td>
+          </tr>
+          <tr>
+            <td class="param-name">server_id</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Identifier for your Minecraft server</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Example Request Body — 1v1</div>
+        <pre>{
+  <span class="k">"server_id"</span>: <span class="s">"my-server"</span>,
+  <span class="k">"category"</span>: <span class="s">"sword"</span>,
+  <span class="k">"match_type"</span>: <span class="s">"1v1"</span>,
+  <span class="k">"players"</span>: [
+    { <span class="k">"uuid"</span>: <span class="s">"b876ec32-e396-476b-a115-8438d83c67d4"</span>, <span class="k">"won"</span>: <span class="b">true</span>,  <span class="k">"placement"</span>: <span class="n">1</span> },
+    { <span class="k">"uuid"</span>: <span class="s">"ec70bcaf-702f-4bb8-b48d-476232a6b527"</span>, <span class="k">"won"</span>: <span class="b">false</span>, <span class="k">"placement"</span>: <span class="n">2</span> }
+  ]
+}</pre>
+
+        <div class="code-label">Example Request Body — FFA</div>
+        <pre>{
+  <span class="k">"category"</span>: <span class="s">"crystal"</span>,
+  <span class="k">"match_type"</span>: <span class="s">"ffa"</span>,
+  <span class="k">"players"</span>: [
+    { <span class="k">"uuid"</span>: <span class="s">"b876ec32-..."</span>, <span class="k">"won"</span>: <span class="b">true</span>,  <span class="k">"placement"</span>: <span class="n">1</span> },
+    { <span class="k">"uuid"</span>: <span class="s">"ec70bcaf-..."</span>, <span class="k">"won"</span>: <span class="b">false</span>, <span class="k">"placement"</span>: <span class="n">2</span> },
+    { <span class="k">"uuid"</span>: <span class="s">"f2aff236-..."</span>, <span class="k">"won"</span>: <span class="b">false</span>, <span class="k">"placement"</span>: <span class="n">3</span> }
+  ]
+}</pre>
+
+        <div class="code-label">Response 201</div>
+        <pre>{
+  <span class="k">"match_id"</span>: <span class="s">"cb17a983-5ae1-4e6d-83c7-8316d48f2c17"</span>,
+  <span class="k">"category"</span>: <span class="s">"sword"</span>,
+  <span class="k">"match_type"</span>: <span class="s">"1v1"</span>,
+  <span class="k">"results"</span>: [
+    { <span class="k">"uuid"</span>: <span class="s">"b876ec32-..."</span>, <span class="k">"elo_before"</span>: <span class="n">1000</span>, <span class="k">"elo_after"</span>: <span class="n">1016</span>, <span class="k">"delta"</span>: <span class="n">16</span>,  <span class="k">"won"</span>: <span class="b">true</span>  },
+    { <span class="k">"uuid"</span>: <span class="s">"ec70bcaf-..."</span>, <span class="k">"elo_before"</span>: <span class="n">1000</span>, <span class="k">"elo_after"</span>: <span class="n">984</span>,  <span class="k">"delta"</span>: <span class="n">-16</span>, <span class="k">"won"</span>: <span class="b">false</span> }
+  ]
+}</pre>
+
+        <div class="info-box info-note">If a UUID is not found in the database, the player is automatically registered with their UUID as a placeholder IGN. Staff can update the IGN later.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff Routes -->
+  <div class="section" id="staff-comp-get">
+    <div class="section-header">
+      <h2>Staff Routes</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="info-box info-warn" style="margin-bottom:16px">All staff routes require a valid Supabase session token passed as <code style="font-family:'DM Mono',monospace">Authorization: Bearer &lt;token&gt;</code>. The user must exist in the <code style="font-family:'DM Mono',monospace">staff</code> table.</div>
+
+    <!-- GET /api/staff/comp -->
+    <div class="endpoint">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-get">GET</span>
+        <span class="endpoint-path">/api/staff/comp</span>
+        <span class="auth-badge">🔒 staff</span>
+        <span class="endpoint-desc">Get comp rating for player</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="subheading">Query Parameters</div>
+        <table>
+          <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">minecraft_uuid</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Player's Minecraft UUID</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"player"</span>: { <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>, <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-..."</span> },
+  <span class="k">"comp_ratings"</span>: { <span class="k">"sword"</span>: <span class="n">1980</span>, <span class="k">"axe"</span>: <span class="n">1750</span>, <span class="c">/* ... */</span> }
+}</pre>
+      </div>
+    </div>
+
+    <!-- POST /api/staff/comp -->
+    <div class="endpoint open" id="staff-comp-post">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-post">POST</span>
+        <span class="endpoint-path">/api/staff/comp</span>
+        <span class="auth-badge">🔒 staff</span>
+        <span class="endpoint-desc">Set comp ratings</span>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--text2); margin-bottom:16px">Set one or more comp ELO ratings for a player. Only the fields you include will be updated. All values must be between 0 and 2000.</p>
+
+        <div class="subheading">Body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">minecraft_uuid</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Player's Minecraft UUID</td>
+          </tr>
+          <tr>
+            <td class="param-name">ratings</td>
+            <td class="param-type">object</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Key/value of category → ELO (0–2000). Partial updates allowed.</td>
+          </tr>
+          <tr>
+            <td class="param-name">reason</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req opt">optional</span></td>
+            <td>Reason for the change — stored in tier_history</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Example Request Body</div>
+        <pre>{
+  <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-e396-476b-a115-8438d83c67d4"</span>,
+  <span class="k">"ratings"</span>: {
+    <span class="k">"sword"</span>: <span class="n">1980</span>,
+    <span class="k">"crystal"</span>: <span class="n">1700</span>
+  },
+  <span class="k">"reason"</span>: <span class="s">"Updated after Bliss tournament"</span>
+}</pre>
+
+        <div class="code-label">Response 200</div>
+        <pre>{
+  <span class="k">"updated"</span>: <span class="b">true</span>,
+  <span class="k">"player"</span>: <span class="s">"Technoblade"</span>,
+  <span class="k">"changes"</span>: { <span class="k">"sword"</span>: <span class="n">1980</span>, <span class="k">"crystal"</span>: <span class="n">1700</span> }
+}</pre>
+      </div>
+    </div>
+
+    <!-- POST /api/staff/players -->
+    <div class="endpoint" id="staff-players-post">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-post">POST</span>
+        <span class="endpoint-path">/api/staff/players</span>
+        <span class="auth-badge">🔒 staff</span>
+        <span class="endpoint-desc">Add a player</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="subheading">Body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">ign</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Player's Minecraft IGN</td>
+          </tr>
+          <tr>
+            <td class="param-name">minecraft_uuid</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>Player's Minecraft UUID (get from mcuuid.net)</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Example Request Body</div>
+        <pre>{
+  <span class="k">"ign"</span>: <span class="s">"Technoblade"</span>,
+  <span class="k">"minecraft_uuid"</span>: <span class="s">"b876ec32-e396-476b-a115-8438d83c67d4"</span>
+}</pre>
+
+        <div class="code-label">Response 201</div>
+        <pre>{ <span class="k">"created"</span>: <span class="b">true</span>, <span class="k">"ign"</span>: <span class="s">"Technoblade"</span> }</pre>
+      </div>
+    </div>
+
+    <!-- DELETE /api/staff/players -->
+    <div class="endpoint" id="staff-players-delete">
+      <div class="endpoint-header" onclick="this.parentElement.classList.toggle('open')">
+        <span class="method-badge m-delete">DEL</span>
+        <span class="endpoint-path">/api/staff/players</span>
+        <span class="auth-badge">👑 admin</span>
+        <span class="endpoint-desc">Remove a player</span>
+      </div>
+      <div class="endpoint-body">
+        <div class="info-box info-danger">Requires <strong>admin</strong> role (not just staff). Permanently deletes the player and all their ratings and match history.</div>
+
+        <div class="subheading">Body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+          <tr>
+            <td class="param-name">minecraft_uuid</td>
+            <td class="param-type">string</td>
+            <td><span class="param-req req">required</span></td>
+            <td>UUID of the player to remove</td>
+          </tr>
+        </table>
+
+        <div class="code-label">Response 200</div>
+        <pre>{ <span class="k">"deleted"</span>: <span class="b">true</span>, <span class="k">"ign"</span>: <span class="s">"Technoblade"</span> }</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reference: Categories -->
+  <div class="section" id="categories">
+    <div class="section-header">
+      <h2>Categories</h2>
+      <div class="section-divider"></div>
+    </div>
+    <p style="color:var(--text2); margin-bottom:16px">All 9 valid category values. Use these exact strings in API requests.</p>
+    <div class="cat-grid">
+      <span class="cat-pill">sword</span>
+      <span class="cat-pill">axe</span>
+      <span class="cat-pill">smp</span>
+      <span class="cat-pill">nethpot</span>
+      <span class="cat-pill">pot</span>
+      <span class="cat-pill">crystal</span>
+      <span class="cat-pill">mace</span>
+      <span class="cat-pill">custom_kit</span>
+      <span class="cat-pill">uhc</span>
+    </div>
+    <div class="info-box info-note" style="margin-top:16px">ELO range: <strong>0 – 2000</strong> per category per mode. Max total ELO is <strong>18,000</strong> (9 × 2000).</div>
+  </div>
+
+  <!-- Reference: ELO System -->
+  <div class="section" id="elo">
+    <div class="section-header">
+      <h2>ELO System</h2>
+      <div class="section-divider"></div>
+    </div>
+    <p style="color:var(--text2); margin-bottom:16px">Casual ELO is auto-calculated from match results. Comp ELO is manually set by staff.</p>
+    <div class="elo-grid">
+      <div class="elo-card">
+        <h4>1v1 Matches</h4>
+        <p>Uses standard Elo formula with <code>K=32</code>. Expected score is calculated from the rating difference. Winner gains what loser loses.</p>
+      </div>
+      <div class="elo-card">
+        <h4>FFA Matches</h4>
+        <p>Each player is compared against every other player. Results averaged. Players start at <code>1000</code> ELO per category.</p>
+      </div>
+      <div class="elo-card">
+        <h4>Team Matches</h4>
+        <p>Team average ELO is used as the representative rating. All players on the winning team gain ELO, losers lose ELO.</p>
+      </div>
+      <div class="elo-card">
+        <h4>Starting ELO</h4>
+        <p>New players start at <code>1000</code> casual ELO in every category. Comp ELO starts at <code>null</code> until set by staff.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reference: Errors -->
+  <div class="section" id="errors">
+    <div class="section-header">
+      <h2>Error Codes</h2>
+      <div class="section-divider"></div>
+    </div>
+    <table>
+      <tr><th>Status</th><th>Meaning</th><th>Common Cause</th></tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--green)">200</span></td>
+        <td>OK</td>
+        <td>Request succeeded</td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--green)">201</span></td>
+        <td>Created</td>
+        <td>Resource was created (match posted, player added)</td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--yellow)">400</span></td>
+        <td>Bad Request</td>
+        <td>Missing required fields, invalid category, ELO out of range</td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--red)">401</span></td>
+        <td>Unauthorized</td>
+        <td>Missing or invalid webhook secret / staff token</td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--red)">403</span></td>
+        <td>Forbidden</td>
+        <td>Token is valid but role is insufficient (e.g. editor trying admin action)</td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--red)">404</span></td>
+        <td>Not Found</td>
+        <td>Player UUID not found</td>
+      </tr>
+      <tr>
+        <td><span style="font-family:'DM Mono',monospace;color:var(--red)">500</span></td>
+        <td>Server Error</td>
+        <td>Database error or misconfigured environment</td>
+      </tr>
+    </table>
+
+    <div class="code-label" style="margin-top:16px">Error Response Shape</div>
+    <pre>{ <span class="k">"error"</span>: <span class="s">"Human-readable error message"</span> }</pre>
+  </div>
+
+</main>
+
+<script>
+  // Smooth scroll for nav links
+  document.querySelectorAll('nav a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault()
+      const el = document.querySelector(a.getAttribute('href'))
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  })
+</script>
+</body>
+</html>
